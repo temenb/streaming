@@ -1,0 +1,49 @@
+{
+  "name": "streaming",
+  "version": "1.0.0",
+  "main": "dist/app.js",
+  "packageManager": "pnpm@8.6.3",
+  "scripts": {
+    "dev": "nodemon --watch src --watch ../../shared/ --exec ts-node -r tsconfig-paths/register src/app.ts",
+    "stage": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.1",
+    "@types/amqplib": "^0.10.8",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/supertest": "^6.0.3",
+    "fast-glob": "^3.3.3",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9",
+    "prisma": "^6.19.3",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3",
+    "@types/ws": "^8.5.10"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.11.0",
+    "@shared/grpc-client-manager": "workspace:*",
+    "@shared/logger": "workspace:*",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "jsonwebtoken": "^9.0.3",
+    "@prisma/client": "^6.19.3",
+    "morgan": "^1.10.1",
+    "pg-boss": "^12.15.0",
+    "@shared/kafka": "workspace:*",
+    "kafkajs": "^2.2.4",
+    "ws": "^8.21.0"
+  }
+}
