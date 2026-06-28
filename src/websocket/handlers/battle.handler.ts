@@ -8,7 +8,8 @@ import frontBattleStreamRegistry from "../channels/front.battle.stream";
 import * as profileService from "../../services/profile.service";
 import {ErrorObject} from "../../grpc/generated/common/error";
 import engineStream from "../../grpc/channels/engine.stream";
-import {enqueueEvent} from "@shared/pg-boss-manager/src/enqueueEvent";
+import pgBossManager from "@shared/pg-boss-manager";
+
 import {kafkaProducersConfig} from "../../config/kafka.config";
 import * as emptyGrpc from "../../grpc/generated/common/empty";
 
@@ -125,7 +126,7 @@ export async function battleHandlerConnectAi(ws: WebSocket, profileId: string, p
 
   const battleIdRequest = streamingGrpc.StartBattleRequest.create({battleId});
   logger.log('messaging to ai');
-  await enqueueEvent(kafkaProducersConfig.topicAiConnectingRequest, battleIdRequest);
+  await pgBossManager.enqueueEvent(kafkaProducersConfig.topicAiConnectingRequest, battleIdRequest);
 }
 
 export async function battleHandlerLeave(ws: WebSocket, profileId: string, payload: streamingGrpc.LeaveBattleRequest) {
