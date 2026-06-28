@@ -8,7 +8,7 @@ import frontBattleStreamRegistry from "../channels/front.battle.stream";
 import * as profileService from "../../services/profile.service";
 import {ErrorObject} from "../../grpc/generated/common/error";
 import engineStream from "../../grpc/channels/engine.stream";
-import {enqueueEvent} from "@shared/pg-boss-helper/src/enqueueEvent";
+import {enqueueEvent} from "@shared/pg-boss-manager/src/enqueueEvent";
 import {kafkaProducersConfig} from "../../config/kafka.config";
 import * as emptyGrpc from "../../grpc/generated/common/empty";
 

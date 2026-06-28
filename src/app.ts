@@ -6,7 +6,7 @@ import kafkaConfig, {kafkaConsumersConfig, kafkaProducersConfig} from "./config/
 import {initWss} from "./websocket/server";
 import config from "./config/config";
 import engineStream from "./grpc/channels/engine.stream";
-import {initBoss, startKafkaWorker} from "@shared/pg-boss-helper";
+import {initBoss, startKafkaWorker} from "@shared/pg-boss-manager";
 import pgBossConfig from "./config/pg.boss.config";
 
 
