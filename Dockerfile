@@ -9,12 +9,12 @@ COPY turbo.json ./
 COPY package.json ./
 COPY pnpm-workspace.yaml ./
 COPY tsconfig.json ./
-COPY services/auth/package*.json ./services/auth/
-COPY services/auth/jest.config.js ./services/auth/
-COPY services/auth/tsconfig.json ./services/auth/
-COPY services/auth/src ./services/auth/src/
-COPY services/auth/__tests__ ./services/auth/__tests__/
-COPY services/auth/prisma ./services/auth/prisma/
+COPY services/streaming/package*.json ./services/streaming/
+COPY services/streaming/jest.config.js ./services/streaming/
+COPY services/streaming/tsconfig.json ./services/streaming/
+COPY services/streaming/src ./services/streaming/src/
+COPY services/streaming/__tests__ ./services/streaming/__tests__/
+COPY services/streaming/prisma ./services/streaming/prisma/
 
 
 # ---------- DEV ----------
@@ -30,7 +30,7 @@ USER node
 EXPOSE 50051
 EXPOSE 8080
 
-CMD ["pnpm", "--filter", "auth", "start"]
+CMD ["pnpm", "--filter", "streaming", "start"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
@@ -41,7 +41,7 @@ FROM base AS prod
 ENV NODE_ENV=production
 
 USER root
-RUN corepack enable && pnpm install --frozen-lockfile --prod && pnpm run --filter auth build
+RUN corepack enable && pnpm install --frozen-lockfile --prod && pnpm run --filter streaming build
 RUN chown -R node:node /usr/src/app
 
 USER node
@@ -49,7 +49,7 @@ USER node
 EXPOSE 50051
 EXPOSE 8080
 
-CMD ["node", "services/auth/dist/app.js"]
+CMD ["node", "services/streaming/dist/app.js"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
