@@ -9,6 +9,7 @@ COPY turbo.json ./
 COPY package.json ./
 COPY pnpm-workspace.yaml ./
 COPY tsconfig.json ./
+
 COPY services/streaming/package*.json ./services/streaming/
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
@@ -41,8 +42,11 @@ FROM base AS prod
 ENV NODE_ENV=production
 
 USER root
-RUN corepack enable && pnpm install --frozen-lockfile --prod && pnpm run --filter streaming build
-RUN chown -R node:node /usr/src/app
+RUN corepack enable \
+ && pnpm install --frozen-lockfile \
+ && pnpm run --filter streaming build \
+ && pnpm prune --prod \
+ && chown -R node:node /usr/src/app
 
 USER node
 
