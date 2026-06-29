@@ -8,20 +8,17 @@
     "stage": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc -p tsconfig.json",
     "proto:generate": "pnpm exec protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/grpc/generated --ts_proto_opt=outputServices=grpc-js,useExactTypes=false,esModuleInterop=true --proto_path=../../proto/ ../../proto/*.proto ../../proto/**/*.proto",
-    "start": "node dist/src/app.js",
+    "start": "node ./dist/app.js",
     "test": "jest",
     "postinstall": "prisma generate --schema=./prisma/schema.prisma"
   },
   "devDependencies": {
-    "@grpc/grpc-js": "^1.14.3",
-    "@grpc/proto-loader": "^0.8.1",
     "@types/amqplib": "^0.10.8",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/morgan": "^1.9.10",
-    "@types/supertest": "^6.0.3",
+    "@types/supertest": "^7.2.0",
     "fast-glob": "^3.3.3",
     "jest": "^30.3.0",
     "nodemon": "^3.1.14",
@@ -36,6 +33,7 @@
     "@types/ws": "^8.5.10"
   },
   "dependencies": {
+    "@grpc/grpc-js": "^1.14.3",
     "@bufbuild/protobuf": "^2.11.0",
     "@shared/grpc-client-manager": "workspace:*",
     "@shared/kafka-manager": "workspace:*",
@@ -43,9 +41,8 @@
     "@shared/logger": "workspace:*",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "jsonwebtoken": "^9.0.3",
     "@prisma/client": "^6.19.3",
-    "morgan": "^1.10.1",
+    "jsonwebtoken": "^9.0.3",
     "pg-boss": "^12.15.0",
     "kafkajs": "^2.2.4",
     "ws": "^8.21.0"

@@ -14,7 +14,6 @@ COPY proto ./proto
 COPY services/streaming/package*.json ./services/streaming/
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
-COPY services/streaming/prisma ./services/streaming/prisma/
 COPY services/streaming/src ./services/streaming/src/
 COPY services/streaming/__tests__ ./services/streaming/__tests__/
 
@@ -27,6 +26,7 @@ RUN apt-get update && apt-get install -y protobuf-compiler
 
 RUN corepack enable
 RUN pnpm install --frozen-lockfile
+RUN mkdir ./services/streaming/src/grpc/generated -p
 RUN pnpm run --filter streaming proto:generate
 RUN pnpm run --filter streaming build
 RUN pnpm install --prod
@@ -69,6 +69,7 @@ EXPOSE 50051
 EXPOSE 8080
 
 CMD ["node", "./services/streaming/dist/app.js"]
+
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
