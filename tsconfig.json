@@ -1,13 +1,10 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist"
-  },
-  "references": [
-    { "path": "../../shared/grpc-client-manager" }
-  ],
+//  "references": [
+//    { "path": "../../shared/grpc-client-manager" }
+//  ],
   "include": [
-    "src"
+    "src",
+    "__tests__"
   ]
 }

@@ -13,18 +13,25 @@ COPY tsconfig.json ./
 COPY services/streaming/package*.json ./services/streaming/
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
+COPY services/streaming/prisma ./services/streaming/prisma/
 COPY services/streaming/src ./services/streaming/src/
 COPY services/streaming/__tests__ ./services/streaming/__tests__/
-COPY services/streaming/prisma ./services/streaming/prisma/
+
+# ---------- BUILD ----------
+FROM base AS build
+
+ENV NODE_ENV=development
+
+RUN corepack enable \
+ && pnpm install --frozen-lockfile \
+ && pnpm run --filter streaming build \
+ && pnpm prune --prod
 
 
 # ---------- DEV ----------
-FROM base AS dev
-ENV NODE_ENV=development
+FROM build AS dev
 
-USER root
-RUN corepack enable && pnpm install
-RUN chown -R node:node /usr/src/app
+ENV NODE_ENV=development
 
 USER node
 
@@ -34,26 +41,32 @@ EXPOSE 8080
 CMD ["pnpm", "--filter", "streaming", "start"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD nc -z localhost 50051 || exit 1
-
+  CMD curl -f http://localhost:9090/livez || exit 1
 
 # ---------- PROD ----------
-FROM base AS prod
+FROM node:22 AS prod
+
+WORKDIR /usr/src/app
+
 ENV NODE_ENV=production
 
-USER root
-RUN corepack enable \
- && pnpm install --frozen-lockfile \
- && pnpm run --filter streaming build \
- && pnpm prune --prod \
- && chown -R node:node /usr/src/app
+
+#COPY --from=build /usr/src/app /usr/src/app
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/package.json ./package.json
+COPY --from=build /usr/src/app/services/streaming/dist ./services/streaming/dist
+COPY --from=build /usr/src/app/shared/*/dist ./shared/*/dist
+COPY --from=build /usr/src/app/shared/*/package.json ./shared/*/package.json
+
+#COPY --from=build /usr/src/app/shared ./shared
 
 USER node
 
 EXPOSE 50051
 EXPOSE 8080
 
-CMD ["node", "services/streaming/dist/app.js"]
+CMD ["node", "dist/services/streaming/src/app.js"]
 
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD nc -z localhost 50051 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:9090/livez || exit 1
