@@ -12,11 +12,11 @@ COPY tsconfig.json ./
 COPY proto ./proto
 
 COPY services/streaming/package*.json ./services/streaming/
-COPY services/streaming/prisma ./services/streaming/prisma
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
 COPY services/streaming/src ./services/streaming/src/
 COPY services/streaming/__tests__ ./services/streaming/__tests__/
+COPY services/streaming/prisma ./services/streaming/prisma/
 
 # ---------- BUILD ----------
 FROM base AS build
@@ -29,8 +29,12 @@ RUN corepack enable
 RUN pnpm install --frozen-lockfile
 RUN mkdir ./services/streaming/src/grpc/generated -p
 RUN pnpm run --filter streaming proto:generate
-RUN pnpm run --filter streaming build
-RUN pnpm install --prod
+RUN pnpm --filter @shared/logger build
+RUN pnpm --filter @shared/grpc-client-manager build
+RUN pnpm --filter @shared/kafka-manager build
+RUN pnpm --filter @shared/pg-boss-manager buld
+RUN pnpm --filter streaming build
+RUN pnpm prune --prod
 
 # ---------- DEV ----------
 FROM build AS dev
@@ -45,7 +49,7 @@ EXPOSE 8080
 CMD ["pnpm", "--filter", "streaming", "start"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD nc -z localhost 50051 || exit 1
+  CMD curl -f http://localhost:8080/livez || exit 1
 
 # ---------- PROD ----------
 FROM node:22 AS prod
@@ -71,6 +75,5 @@ EXPOSE 8080
 
 CMD ["node", "./services/streaming/dist/app.js"]
 
-
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD nc -z localhost 50051 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8080/livez || exit 1
