@@ -12,6 +12,7 @@ COPY tsconfig.json ./
 COPY proto ./proto
 
 COPY services/streaming/package*.json ./services/streaming/
+COPY services/streaming/prisma ./services/streaming/prisma
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
 COPY services/streaming/src ./services/streaming/src/
