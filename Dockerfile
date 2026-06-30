@@ -32,7 +32,7 @@ RUN pnpm run --filter streaming proto:generate
 RUN pnpm --filter @shared/logger build
 RUN pnpm --filter @shared/grpc-client-manager build
 RUN pnpm --filter @shared/kafka-manager build
-RUN pnpm --filter @shared/pg-boss-manager buld
+RUN pnpm --filter @shared/pg-boss-manager build
 RUN pnpm --filter streaming build
 RUN pnpm prune --prod
 
