@@ -41,6 +41,14 @@ FROM build AS dev
 
 ENV NODE_ENV=development
 
+COPY --from=base /usr/local/bin/corepack /usr/local/bin/corepack
+RUN corepack enable
+RUN corepack prepare pnpm@8.6.3 --activate
+
+RUN chown -R node:node /usr/src/app
+
+
+
 USER node
 
 EXPOSE 50051
@@ -48,8 +56,8 @@ EXPOSE 8080
 
 CMD ["pnpm", "--filter", "streaming", "start"]
 
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/livez || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:9090/livez || exit 1
 
 # ---------- PROD ----------
 FROM node:22 AS prod
@@ -76,4 +84,5 @@ EXPOSE 8080
 CMD ["node", "./services/streaming/dist/app.js"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/livez || exit 1
+  CMD curl -f http://localhost:9090/livez || exit 1
+
