@@ -104,11 +104,15 @@ class FrontBattleStreamRegistry {
     const profileId = frontBattleStreamRegistry.getProfileIdByStream(ws);
 
 
-
     for (const battleId of battleIds) {
 
 
-      const grpcRequest = engineGrpc.BattleStreamRequest.create({leave: battleGrpc.BattleLeaveRequest.create({battleId, profileId})})
+      const grpcRequest = engineGrpc.BattleStreamRequest.create({
+        leave: battleGrpc.BattleLeaveRequest.create({
+          battleId,
+          profileId
+        })
+      })
 
       engineStream.write(grpcRequest);
 

@@ -4,11 +4,8 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-//  "references": [
-//    { "path": "../../shared/grpc-client-manager" }
-//  ],
-  "include": [
-    "src",
-    "__tests__"
-  ]
+  //  "references": [
+  //    { "path": "../../shared/grpc-client-manager" }
+  //  ],
+  "include": ["src"]
 }
