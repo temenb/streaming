@@ -81,7 +81,6 @@ WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
-COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/services/streaming/node_modules ./services/streaming/node_modules
 COPY --from=build /usr/src/app/services/streaming/dist ./services/streaming/dist
 COPY --from=build /usr/src/app/shared ./shared
