@@ -27,14 +27,30 @@ RUN apt-get update && apt-get install -y protobuf-compiler
 
 RUN corepack enable
 RUN pnpm install --frozen-lockfile
-RUN mkdir ./services/streaming/src/grpc/generated -p
+
+RUN mkdir -p ./services/streaming/src/grpc/generated
 RUN pnpm run --filter streaming proto:generate
+
 RUN pnpm --filter @shared/logger build
 RUN pnpm --filter @shared/grpc-client-manager build
 RUN pnpm --filter @shared/kafka-manager build
 RUN pnpm --filter @shared/pg-boss-manager build
+
 RUN pnpm --filter streaming build
+
 RUN pnpm prune --prod
+
+
+# ---------- PREDEPLOY ----------
+FROM build AS predeploy
+
+WORKDIR /usr/src/app/services/streaming
+
+# prisma CLI нужен только тут
+RUN corepack enable
+
+CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
+
 
 # ---------- DEV ----------
 FROM build AS dev
@@ -47,8 +63,6 @@ RUN corepack prepare pnpm@8.6.3 --activate
 
 RUN chown -R node:node /usr/src/app
 
-
-
 USER node
 
 EXPOSE 50051
@@ -56,8 +70,9 @@ EXPOSE 8080
 
 CMD ["pnpm", "--filter", "streaming", "start"]
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:9090/livez || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD nc -z localhost 50051 || exit 1
+
 
 # ---------- PROD ----------
 FROM node:22 AS prod
@@ -66,15 +81,11 @@ WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
-#RUN pnpm deploy --filter streaming /out
-
-##COPY --from=build /usr/src/app /usr/src/app
-
+COPY --from=build /usr/src/app/services/streaming/prisma ./services/streaming/prisma
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/services/streaming/node_modules ./services/streaming/node_modules
 COPY --from=build /usr/src/app/services/streaming/dist ./services/streaming/dist
 COPY --from=build /usr/src/app/shared ./shared
-
 
 USER node
 
@@ -83,6 +94,5 @@ EXPOSE 8080
 
 CMD ["node", "./services/streaming/dist/app.js"]
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:9090/livez || exit 1
-
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD nc -z localhost 50051 || exit 1
