@@ -39,7 +39,7 @@ RUN pnpm --filter @shared/grpc-client-manager build
 RUN pnpm --filter @shared/kafka-manager build
 RUN pnpm --filter @shared/pg-boss-manager build
 
-RUN pnpm --filter streaming exec prisma generate
+RUN pnpm --filter streaming prisma:generate
 RUN pnpm --filter streaming build
 
 RUN pnpm --filter streaming deploy /deploy --prod
