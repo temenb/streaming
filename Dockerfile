@@ -89,5 +89,7 @@ HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
 
 
 ## ---------- PREDEPLOY ----------
-FROM prod AS predeploy
+FROM build AS predeploy
 CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
+
+
