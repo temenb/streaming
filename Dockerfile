@@ -43,13 +43,6 @@ RUN pnpm --filter streaming build
 
 RUN pnpm --filter streaming deploy /deploy --prod
 
-## ---------- PREDEPLOY ----------
-FROM build AS predeploy
-
-ENV NODE_ENV=production
-
-RUN pnpm --filter streaming prisma migrate deploy
-
 # ---------- DEV ----------
 FROM build AS dev
 
@@ -88,8 +81,12 @@ EXPOSE 8080
 
 
 CMD ["node", "dist/app.js"]
-#CMD ["node", "./services/streaming/dist/app.js"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
 
+
+
+## ---------- PREDEPLOY ----------
+FROM prod AS predeploy
+CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
