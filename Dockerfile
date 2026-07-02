@@ -59,6 +59,20 @@ WORKDIR /usr/src/app/services/streaming
 
 CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
 
+## ---------- PREDEPLOY ----------
+#FROM build AS predeploy
+#
+#ENV NODE_ENV=production
+#
+## Запускаем миграции Prisma
+#RUN pnpm --filter gateway prisma migrate deploy
+#
+## Можно добавить генерацию клиента, если нужно
+#RUN pnpm --filter gateway prisma generate
+#
+#WORKDIR /usr/src/app/services/gateway
+#
+#CMD ["node", "dist/index.js"]
 
 # ---------- DEV ----------
 FROM build AS dev
@@ -67,7 +81,7 @@ ENV NODE_ENV=development
 
 COPY --from=base /usr/local/bin/corepack /usr/local/bin/corepack
 RUN corepack enable
-RUN corepack prepare pnpm@8.6.3 --activate
+RUN corepack prepare pnpm@11.9.0 --activate
 
 RUN chown -R node:node /usr/src/app
 
