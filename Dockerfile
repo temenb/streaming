@@ -11,6 +11,7 @@ COPY pnpm-workspace.yaml ./
 COPY tsconfig.base.json ./
 COPY proto ./proto
 
+
 COPY services/streaming/package*.json ./services/streaming/
 COPY services/streaming/jest.config.js ./services/streaming/
 COPY services/streaming/tsconfig.json ./services/streaming/
@@ -25,8 +26,10 @@ ENV NODE_ENV=development
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
-RUN corepack enable
-RUN pnpm install --frozen-lockfile
+RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
+
+RUN pnpm fetch
+RUN pnpm install --offline --frozen-lockfile
 
 RUN mkdir -p ./services/streaming/src/grpc/generated
 RUN pnpm run --filter streaming proto:generate
@@ -38,41 +41,14 @@ RUN pnpm --filter @shared/pg-boss-manager build
 
 RUN pnpm --filter streaming build
 
-RUN pnpm prune --prod
-
-
-# ---------- PREDEPLOY ----------
-FROM node:22 AS predeploy
-
-WORKDIR /usr/src/app
-
-COPY pnpm-lock.yaml ./
-COPY package.json ./
-COPY pnpm-workspace.yaml ./
-COPY tsconfig.base.json ./
-COPY services/streaming ./services/streaming
-
-RUN corepack enable
-RUN pnpm install --frozen-lockfile --prod=false
-
-WORKDIR /usr/src/app/services/streaming
-
-CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema.prisma"]
+RUN pnpm --filter streaming deploy /deploy --prod
 
 ## ---------- PREDEPLOY ----------
-#FROM build AS predeploy
-#
-#ENV NODE_ENV=production
-#
-## Запускаем миграции Prisma
-#RUN pnpm --filter gateway prisma migrate deploy
-#
-## Можно добавить генерацию клиента, если нужно
-#RUN pnpm --filter gateway prisma generate
-#
-#WORKDIR /usr/src/app/services/gateway
-#
-#CMD ["node", "dist/index.js"]
+FROM build AS predeploy
+
+ENV NODE_ENV=production
+
+RUN pnpm --filter streaming prisma migrate deploy
 
 # ---------- DEV ----------
 FROM build AS dev
@@ -95,7 +71,6 @@ CMD ["pnpm", "--filter", "streaming", "start"]
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
 
-
 # ---------- PROD ----------
 FROM node:22 AS prod
 
@@ -103,16 +78,18 @@ WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
-COPY --from=build /usr/src/app/services/streaming/node_modules ./services/streaming/node_modules
-COPY --from=build /usr/src/app/services/streaming/dist ./services/streaming/dist
-COPY --from=build /usr/src/app/shared ./shared
+
+COPY --from=build /deploy .
 
 USER node
 
 EXPOSE 50051
 EXPOSE 8080
 
-CMD ["node", "./services/streaming/dist/app.js"]
+
+CMD ["node", "dist/app.js"]
+#CMD ["node", "./services/streaming/dist/app.js"]
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
   CMD nc -z localhost 50051 || exit 1
+
